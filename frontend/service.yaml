@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: simple-webapp
+  labels:
+    app: simple-webapp
+    component: frontend
+    tier: web
+spec:
+  selector:
+    app: simple-webapp
+    component: frontend
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+    protocol: TCP
+  type: NodePort  # Minikube에서 외부 접근 가능
+  sessionAffinity: None

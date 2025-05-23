@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: simple-webapp
+  labels:
+    app: simple-webapp
+    component: backend
+    tier: api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: simple-webapp
+      component: backend
+  template:
+    metadata:
+      labels:
+        app: simple-webapp
+        component: backend
+        tier: api
+    spec:
+      containers:
+      - name: backend
+        image: httpd:2.4
+        ports:
+        - containerPort: 80
+        env:
+        - name: SERVER_TYPE
+          value: "backend"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        # 간단한 API 응답을 위한 설정
+        volumeMounts:
+        - name: backend-config
+          mountPath: /usr/local/apache2/htdocs/
+      volumes:
+      - name: backend-config
+        configMap:
+          name: backend-html
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-html
+  namespace: simple-webapp
+  labels:
+    app: simple-webapp
+    component: backend
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Backend API</title>
+        <style>
+            body { font-family: Arial; background: #2c3e50; color: white; padding: 20px; }
+            .container { max-width: 600px; margin: 0 auto; text-align: center; }
+            .api-endpoint { background: #34495e; padding: 15px; margin: 10px; border-radius: 5px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🚀 Backend API Server</h1>
+            <p>Simple REST API for testing</p>
+            <div class="api-endpoint">
+                <strong>GET /api/status</strong><br>
+                Status: ✅ Running<br>
+                Server: Backend Pod
+            </div>
+            <div class="api-endpoint">
+                <strong>GET /api/data</strong><br>
+                Response: {"message": "Hello from Backend!", "timestamp": "2024-01-15T10:30:00Z"}
+            </div>
+            <p>🏷️ Component: Backend | Tier: API</p>
+        </div>
+    </body>
+    </html>

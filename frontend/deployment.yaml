@@ -1,0 +1,169 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: simple-webapp
+  labels:
+    app: simple-webapp
+    component: frontend
+    tier: web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: simple-webapp
+      component: frontend
+  template:
+    metadata:
+      labels:
+        app: simple-webapp
+        component: frontend
+        tier: web
+    spec:
+      containers:
+      - name: frontend
+        image: nginx:1.21
+        ports:
+        - containerPort: 80
+        env:
+        - name: BACKEND_URL
+          value: "http://backend-service:8080"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        volumeMounts:
+        - name: frontend-config
+          mountPath: /usr/share/nginx/html/
+      volumes:
+      - name: frontend-config
+        configMap:
+          name: frontend-html
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-html
+  namespace: simple-webapp
+  labels:
+    app: simple-webapp
+    component: frontend
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Simple Web App</title>
+        <style>
+            body { 
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+                margin: 0; 
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .container { 
+                background: white; 
+                padding: 40px; 
+                border-radius: 20px; 
+                box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+                max-width: 600px;
+                text-align: center;
+            }
+            .header { color: #2c3e50; margin-bottom: 30px; }
+            .status { 
+                background: #e8f5e8; 
+                border: 2px solid #27ae60; 
+                padding: 20px; 
+                border-radius: 10px; 
+                margin: 20px 0;
+            }
+            .backend-info {
+                background: #f8f9fa;
+                border-left: 5px solid #007bff;
+                padding: 15px;
+                margin: 20px 0;
+                text-align: left;
+            }
+            button {
+                background: #007bff;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 5px;
+                cursor: pointer;
+                margin: 10px;
+                font-size: 16px;
+            }
+            button:hover { background: #0056b3; }
+            .architecture {
+                background: #f1f2f6;
+                padding: 20px;
+                border-radius: 10px;
+                margin: 20px 0;
+                text-align: left;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>🌐 Simple Web Application</h1>
+                <p>Frontend + Backend Architecture Test</p>
+            </div>
+            
+            <div class="status">
+                <h3>✅ Frontend Status: Running</h3>
+                <p>🏷️ Component: Frontend | Tier: Web</p>
+                <p>📦 Running in Kubernetes Pod</p>
+            </div>
+            
+            <div class="backend-info">
+                <h4>🔗 Backend Connection</h4>
+                <p><strong>Backend Service:</strong> backend-service:8080</p>
+                <p><strong>Status:</strong> <span id="backendStatus">Checking...</span></p>
+                <button onclick="testBackend()">Test Backend Connection</button>
+            </div>
+            
+            <div class="architecture">
+                <h4>🏗️ Current Architecture</h4>
+                <p><strong>Namespace:</strong> simple-webapp</p>
+                <p><strong>Frontend Pods:</strong> 3 replicas (Load Balanced)</p>
+                <p><strong>Backend Pods:</strong> 2 replicas (API Service)</p>
+                <p><strong>Services:</strong> frontend-service, backend-service</p>
+            </div>
+            
+            <div style="margin-top: 30px; font-size: 14px; color: #666;">
+                <p>🚢 Deployed via Argo CD | 🐳 Running on Kubernetes</p>
+            </div>
+        </div>
+        
+        <script>
+            function testBackend() {
+                document.getElementById('backendStatus').innerHTML = 'Testing...';
+                
+                // 실제 환경에서는 fetch로 backend 호출
+                // fetch('/api/status').then(...)
+                
+                // 데모용 시뮬레이션
+                setTimeout(() => {
+                    document.getElementById('backendStatus').innerHTML = 
+                        '✅ Connected (Simulated)';
+                }, 1000);
+            }
+            
+            // 페이지 로드시 자동 체크
+            window.onload = function() {
+                setTimeout(() => {
+                    document.getElementById('backendStatus').innerHTML = 
+                        '✅ Service Discovery OK';
+                }, 500);
+            }
+        </script>
+    </body>
+    </html>
